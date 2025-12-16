@@ -86,7 +86,7 @@ fn main() {
 ## Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
 
-Complex numbers will be implemented by using traits in the `core` crate:
+Operations on complex numbers will be implemented by using traits in the `core` crate that are implemented for the possible component types:
 ```
 trait Float: Copy + Clone {}
 impl Float for f32 {}
