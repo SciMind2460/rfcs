@@ -32,7 +32,7 @@ using the standard library's FFI-compatible complex numbers.
 ## Guide-level explanation
 [guide-level-explanation]: #guide-level-explanation
 
-`Complex<T>` numbers can be instantiated as of any type using `Complex::new(re, im)` where `re` and `im` are of the same type (this includes all numbers).
+`Complex<T>` numbers can be instantiated with any component type using `Complex::new(re, im)` where `re` and `im` are of the same type (this includes all numbers).
 ```rust
 let x = Complex::new(3.0, 4.0);
 ```
@@ -196,8 +196,8 @@ for all functions you wish for. But this still needs to happen in C.
 
 ### Alternatives:
 - Don't do this: There are, obviously, millions of alternatives on crates.io, the foremost being `num-complex`. However, I believe that if we wish to support proper FFI with C, then a standard type that matches calling conventions with C complex numbers is an important feature of the language. Hence, I do not recommend this idea.
-- Use a polar layout: Polar complex numbers, are undoubtedly a more optimal solution for multiplying complexes. However, I believe that if we wish to have proper FFI with C, then complex number layout should be chosen in accordance with the layout that is used in the C standard, and that is the orthogonal layout. This is also the layout used by most of other languages and crates on crates.io.
-- Non-generic primitive types: These are, obviously, the most obvious and practical solution. However, if we implemented lots of such types, then we would not be able to expand for `f16` and `f128` support without repeating the code already implemented. It would be extremely repetitive and tedious to add new types, especially since Gaussian integers and other floating points could have added support.
+- Use a polar layout: Polar complex numbers are undoubtedly a more optimal solution for multiplying complexes. However, I believe that if we wish to have proper FFI with C, then complex number layout should be chosen in accordance with the layout that is used in the C standard, and that is the orthogonal layout. This is also the layout used by most other languages and other crates on crates.io.
+- Non-generic primitive types: These are, obviously, the most obvious and practical solution. However, if we implemented lots of such types, then we would not be able to expand for `f16` and `f128` support without repeating the code already implemented. It would be extremely repetitive and tedious to add new types, especially since Gaussian integers (`Complex<i32>`) and other floating points could have added support.
 
 ## Prior art
 [prior-art]: #prior-art
