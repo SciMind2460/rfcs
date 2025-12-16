@@ -32,7 +32,7 @@ using the standard library's FFI-compatible complex numbers.
 ## Guide-level explanation
 [guide-level-explanation]: #guide-level-explanation
 
-`Complex<T>` numbers can be instantiated with any component type using `Complex::new(re, im)` where `re` and `im` are of the same type (this includes all numbers).
+`Complex<T>` numbers can be instantiated with any component type using `Complex::new(re, im)` where `re` and `im` are of the same type ( includes all numbers).
 ```rust
 let x = Complex::new(3.0, 4.0);
 ```
@@ -185,7 +185,7 @@ Also, the multiple emitted calls to `libgcc.so` (`__mulsc3` and the like) may ca
 ## Rationale and alternatives
 [rationale-and-alternatives]: #rationale-and-alternatives
 
-The rationale for this type is mostly FFI: C libraries that may be linked from Rust code currently cannot provide functions with direct struct implementations of Complex - they must be hidden under at least a layer of indirection. This is because of the undefined calling convention of complex numbers in C. For example: on powerpc64-linux-gnu, [returning double _Complex doesn't do the same thing as returning a struct with a field of type double[2].](https://gcc.godbolt.org/z/hh7zYcnK6) However, it is not always possible to write a C complex-valued function that wraps the first function in a pointer. Thus, FFI becomes a problem if such complex-valued functions are passed by value and not by reference. This 
+The rationale for this type is mostly FFI: C libraries that may be linked from Rust code currently cannot provide functions with direct struct implementations of Complex - they must be hidden under at least a layer of indirection. This is because of the undefined calling convention of complex numbers in C. For example: on powerpc64-linux-gnu, [returning double _Complex doesn't do the same thing as returning a struct with a field of type double[2].](https://gcc.godbolt.org/z/hh7zYcnK6) However, it is not always possible to write a C complex-valued function that wraps the first function in a pointer. Thus, FFI becomes a problem if such complex-valued functions are passed by value and not by reference.  
 Additionally, another issue this solves is to have a unified API for complex numbers. Right now, many crates are using their own implementation (`num-complex` could serve as a unifying factor, but other crates do not implement the same complex numbers, such as `nalgebra`, due to less care over incompatibility concerns), which makes it difficult to implement unifying interfaces without complicating the code with too many conversion functions. This serves a problem for crates that use different implementations of complex numbers for different tasks (`sprs` relying on `num-complex` and `nalgebra` implementing its own variation)
 
 You could theoretically do something like this:
