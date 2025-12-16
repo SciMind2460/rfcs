@@ -151,6 +151,9 @@ impl<T: Sub> Sub for Complex<T> { // and for corresponding real types
 
   fn sub(self, other: Self) -> Self::Output;
 }
+```
+and then implementations of those functions which require external calls to C (`__mulsc3` etc.), which will be in `std` and not `core`:
+```rust
 impl Mul for Complex<f32> { // calls to __mulsc3 will be required here for implementation details and corresponding real types will also be implemented
   type Output = Self;
 
@@ -183,13 +186,13 @@ Also, the multiple emitted calls to `libgcc.so` (`__mulsc3` and the like) may ca
 [rationale-and-alternatives]: #rationale-and-alternatives
 
 The rationale for this type is mostly FFI: C libraries that may be linked from Rust code currently cannot provide functions with direct struct implementations of Complex - they must be hidden under at least a layer of indirection. This is because of the undefined calling convention of complex numbers in C. For example: on powerpc64-linux-gnu, [returning double _Complex doesn't do the same thing as returning a struct with a field of type double[2].](https://gcc.godbolt.org/z/hh7zYcnK6) However, it is not always possible to write a C complex-valued function that wraps the first function in a pointer. Thus, FFI becomes a problem if such complex-valued functions are passed by value and not by reference. This 
-Additionally, another issue this solves is to have a unified API for complex numbers. Right now, many crates are using their own implementation (`num-complex` could serve as a unifying factor, but other crates do not implement the same complex numbers like `nalgebra`), which makes it difficult to implement unifying interfaces without complicating the code with too many conversion functions. This serves a problem for crates that use different implementations of complex numbers for different tasks (`sprs` relying on `num-complex` and `nalgebra` implementing its own variation)
+Additionally, another issue this solves is to have a unified API for complex numbers. Right now, many crates are using their own implementation (`num-complex` could serve as a unifying factor, but other crates do not implement the same complex numbers, such as `nalgebra`, due to less care over incompatibility concerns), which makes it difficult to implement unifying interfaces without complicating the code with too many conversion functions. This serves a problem for crates that use different implementations of complex numbers for different tasks (`sprs` relying on `num-complex` and `nalgebra` implementing its own variation)
 
 You could theoretically do something like this:
 ```c
 double _Complex function(double _Complex value);
-double _Complex *wrapper_function(double _Complex* value) {
-  return &function(*value);
+void wrapper_function(double _Complex* value, double _Complex* out) {
+    *out = function(*value);
 }
 ```
 for all functions you wish for. But this still needs to happen in C.
@@ -197,7 +200,7 @@ for all functions you wish for. But this still needs to happen in C.
 ### Alternatives:
 - Don't do this: There are, obviously, millions of alternatives on crates.io, the foremost being `num-complex`. However, I believe that if we wish to support proper FFI with C, then a standard type that matches calling conventions with C complex numbers is an important feature of the language. Hence, I do not recommend this idea.
 - Use a polar layout: Polar complex numbers are undoubtedly a more optimal solution for multiplying complexes. However, I believe that if we wish to have proper FFI with C, then complex number layout should be chosen in accordance with the layout that is used in the C standard, and that is the orthogonal layout. This is also the layout used by most other languages and other crates on crates.io.
-- Non-generic primitive types: These are, obviously, the most obvious and practical solution. However, if we implemented lots of such types, then we would not be able to expand for `f16` and `f128` support without repeating the code already implemented. It would be extremely repetitive and tedious to add new types, especially since Gaussian integers (`Complex<i32>`) and other floating points could have added support.
+- Non-generic primitive types: These are, obviously, the most obvious and practical solution. However, if we implemented lots of such types, then we would not be able to expand for `f16` and `f128` support without repeating the code already implemented. It would be extremely repetitive and tedious to document new types and their behavior, even if we used macros to generate implementations
 
 ## Prior art
 [prior-art]: #prior-art
