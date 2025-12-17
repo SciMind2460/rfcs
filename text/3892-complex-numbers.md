@@ -93,12 +93,13 @@ impl Float for f32 {}
 impl Float for f64 {}
 ```
 Calls to some `libgcc` functions will also be needed and will be emitted by the backend via compiler-builtins, specifically `__mulsc3`, `__muldc3`, `__divsc3` and `__divdc3` for the proper and complete implementation of these types.
-They will have an internal representation similar to this:
+They will have an internal representation similar to this (with public fields for real and imaginary parts):
 ```rust
 // in core::complex
-#[lang = "complex"] // For matching the calling convention (special repr needed?)
+#[lang = "complex"]
+#[repr(C)]
 #[derive(Copy, Clone, PartialEq, Debug)]
-pub struct Complex<T>(re: T, im: T);
+pub struct Complex<T> {pub re: T, pub im: T};
 ```
 have construction methods and `From` impls:
 ```rust
@@ -111,31 +112,6 @@ impl<T> From<(T, T)> for Complex<T> {
 }
 impl<T> From<[T; 2]> for Complex<T> {
   fn from(value: [T; 2]) -> Self;
-}
-```
-
-have methods to return their real and imaginary part (`.re()` and `.im()`):
-```rust
-impl<T> Complex<T> {
-  fn re(self) -> T;
-  fn im(self) -> T;
-}
-```
-polar conversions:
-```rust
-impl<T: Float + Mul + Add> Complex<T> {
-  fn modulus(self) -> T;
-}
-
-impl Complex<f32> {
-  fn angle(self) -> f32;
-  fn from_polar(modulus: f32, angle: f32) -> Self;
-}
-
-impl Complex<f64> {
-  fn angle(self) -> f64{
-  }
-  fn from_polar(modulus: f64, angle: f64) -> Self;
 }
 ```
 and have arithmetic implementations similar to this:
@@ -253,3 +229,4 @@ that could help simplify the life of people who otherwise would have to keep wri
 - We can also support f16 and f128 once methods for them are stabilised. 
 - We should also think about a `Display` implementation. Should we support something like `1 + 2i` or something else? Should we not make a `Display` impl at all, and just use re() and im() for the implementation?
 - We should also consider adding aliases (like c32 and c64) for floating points once they are established, to allow for a shorthand syntax.
+- Eventually, we should also consider adding polar conversions (e.g, `modulus` and `angle`)
