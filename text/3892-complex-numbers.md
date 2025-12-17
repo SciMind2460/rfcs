@@ -86,13 +86,8 @@ fn main() {
 ## Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
 
-Operations on complex numbers will be implemented by using traits in the `core` crate that are implemented for the possible component types:
-```
-trait Float: Copy + Clone {}
-impl Float for f32 {}
-impl Float for f64 {}
-```
-Calls to some `libgcc` functions will also be needed and will be emitted by the backend via compiler-builtins, specifically `__mulsc3`, `__muldc3`, `__divsc3` and `__divdc3` for the proper and complete implementation of these types.
+The `core` crate will provide implementations for operator traits for possible component types. For now, complex operations like `Mul` and `Div` are defined specifically for each floating-point type, while `Add` and `Sub` are defined for any components that themselves implement `Add` and `Sub`.
+Calls to some `libgcc` functions may also be needed, and will be emitted by the backend via compiler-builtins, specifically `__mulsc3`, `__muldc3`, `__divsc3` and `__divdc3` for the proper and complete implementation of these types.
 They will have an internal representation similar to this (with public fields for real and imaginary parts):
 ```rust
 // in core::complex
