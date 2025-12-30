@@ -1,4 +1,4 @@
-- Feature Name: complex-numbers
+- Feature Name: `complex_numbers`
 - Start Date: 2025-12-02
 - RFC PR: [rust-lang/rfcs#3892](https://github.com/rust-lang/rfcs/pull/3892)
 - Rust Issue: [rust-lang/rust#0000](https://github.com/rust-lang/rust/issues/0000)
@@ -87,7 +87,7 @@ fn main() {
 [reference-level-explanation]: #reference-level-explanation
 
 The `core` crate will provide implementations for operator traits for possible component types. For now, complex operations like `Mul` and `Div` are defined specifically for each floating-point type, while `Add` and `Sub` are defined for any components that themselves implement `Add` and `Sub`.
-Calls to some `libgcc` functions may also be needed, and will be emitted by the backend via compiler-builtins, specifically `__mulsc3`, `__muldc3`, `__divsc3` and `__divdc3` for the proper and complete implementation of these types.
+Calls to some `libgcc` functions may also be needed, and will be emitted by the backend via compiler-builtins, specifically `__mulsc3`, `__muldc3`, `__divsc3` and `__divdc3` for the proper and complete implementation of these types. This is because if we implemented these operations generically, to implement any overflow checks, we would need to implement a trait that can generically call, say, a `max()` function and compare between values. `Add` and `Sub` do not have this problem (as they are relatively straightforward and do not hold any intermediate values)
 They will have an internal representation similar to this (with public fields for real and imaginary parts):
 ```rust
 // in core::complex
@@ -122,8 +122,6 @@ impl<T: Sub> Sub for Complex<T> { // and for corresponding real types
 
   fn sub(self, other: Self) -> Self::Output;
 }
-```
-and then implementations of those functions which require external calls to C (`__mulsc3` etc.), which will be in `std` and not `core`:
 ```rust
 impl Mul for Complex<f32> { // calls to __mulsc3 will be required here for implementation details and corresponding real types will also be implemented
   type Output = Self;
@@ -146,12 +144,12 @@ impl Div for Complex<f64> { // calls to __divdc3 will be required here for imple
   fn div(self, other: Self) -> Self::Output;
 }
 ```
-The floating point numbers shall have sine and cosine and tangent functions, their inverses, their hyperbolic variants, and their inverses defined as per the C standard and with Infinity and Nan values defined as per the C standard.
+The floating point numbers shall have sine and cosine and tangent functions, their inverses, their hyperbolic variants, and their inverses defined as per the C standard and with Infinity and NaN values defined as per the C standard.
 ## Drawbacks
 [drawbacks]: #drawbacks
 
 The implementation surface of the complex types means more items for the libs and lang teams to maintain.
-Also, the multiple emitted calls to `libgcc.so` (`__mulsc3` and the like) may cause a bit of overhead and may not be what the Rust lang team and compiler team want.
+Also, the multiple emitted calls to `libgcc.so` (`__mulsc3` and the like) via compiler-builtins may cause a bit of overhead and may not be what the Rust lang team and compiler team want.
 
 ## Rationale and alternatives
 [rationale-and-alternatives]: #rationale-and-alternatives
